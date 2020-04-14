@@ -11,6 +11,10 @@ public class VehicleEntity {
     @Id
     private String vin;
 
+    public VehicleEntity(final String vin) {
+        this.vin = vin;
+    }
+
     public String getVin() {
         return vin;
     }

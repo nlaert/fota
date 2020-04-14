@@ -13,4 +13,10 @@ public interface VehicleService {
     List<FeatureEntity> getAllFeaturesByVehicle(String vin);
 
     List<VehicleEntity> getAll();
+
+    /**
+     * Reads the content of the received file and stores it into the DB.
+     * @param filePath the new file to read.
+     */
+    void processNewFile(String filePath);
 }

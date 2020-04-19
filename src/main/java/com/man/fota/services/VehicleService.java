@@ -16,7 +16,9 @@ public interface VehicleService {
 
     /**
      * Reads the content of the received file and stores it into the DB.
+     *
      * @param filePath the new file to read.
+     * @param fileName the name of the file.
      */
-    void processNewFile(String filePath);
+    void processNewFile(String filePath, final String fileName);
 }

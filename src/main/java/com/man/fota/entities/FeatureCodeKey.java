@@ -1,28 +1,35 @@
 package com.man.fota.entities;
 
 import javax.persistence.Embeddable;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import java.io.Serializable;
 import java.util.Objects;
 
 @Embeddable
 public class FeatureCodeKey implements Serializable {
-    private String featureName;
-    private String code;
 
-    //TODO: ctor might be necessary
-    public String getFeatureName() {
+    @JoinColumn(name = "feature_name")
+    @ManyToOne
+    private FeatureEntity featureName;
+
+    @JoinColumn(name = "code")
+    @ManyToOne
+    private CodeEntity code;
+
+    public FeatureEntity getFeatureName() {
         return featureName;
     }
 
-    public void setFeatureName(String featureName) {
+    public void setFeatureName(final FeatureEntity featureName) {
         this.featureName = featureName;
     }
 
-    public String getCode() {
+    public CodeEntity getCode() {
         return code;
     }
 
-    public void setCode(String code) {
+    public void setCode(final CodeEntity code) {
         this.code = code;
     }
 

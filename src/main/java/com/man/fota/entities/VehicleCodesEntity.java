@@ -1,55 +1,37 @@
 package com.man.fota.entities;
 
+import javax.persistence.EmbeddedId;
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import java.util.Objects;
+import javax.persistence.Version;
 
 @Entity(name = "vehicle_codes")
 public class VehicleCodesEntity {
 
-    @Id
-    @GeneratedValue
-    private Long id;
-    private String vin;
-    private String code;
+    @EmbeddedId
+    private VehicleCodeKey vehicleCodeKey;
+    @Version
+    private Long version;
 
-    public Long getId() {
-        return id;
+    public VehicleCodesEntity() {
     }
 
-    public void setId(Long id) {
-        this.id = id;
+    public VehicleCodesEntity(final VehicleCodeKey vehicleCodeKey) {
+        this.vehicleCodeKey = vehicleCodeKey;
     }
 
-    public String getVin() {
-        return vin;
+    public VehicleCodeKey getVehicleCodeKey() {
+        return vehicleCodeKey;
     }
 
-    public void setVin(String vin) {
-        this.vin = vin;
+    public void setVehicleCodeKey(final VehicleCodeKey vehicleCodeKey) {
+        this.vehicleCodeKey = vehicleCodeKey;
     }
 
-    public String getCode() {
-        return code;
+    public Long getVersion() {
+        return version;
     }
 
-    public void setCode(String code) {
-        this.code = code;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        VehicleCodesEntity that = (VehicleCodesEntity) o;
-        return Objects.equals(getId(), that.getId()) &&
-                Objects.equals(getVin(), that.getVin()) &&
-                Objects.equals(getCode(), that.getCode());
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(getId(), getVin(), getCode());
+    public void setVersion(final Long version) {
+        this.version = version;
     }
 }

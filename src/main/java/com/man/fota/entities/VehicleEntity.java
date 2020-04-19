@@ -11,6 +11,9 @@ public class VehicleEntity {
     @Id
     private String vin;
 
+    protected VehicleEntity() {
+    }
+
     public VehicleEntity(final String vin) {
         this.vin = vin;
     }

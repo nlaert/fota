@@ -31,7 +31,7 @@ public class FeatureServiceImpl implements FeatureService {
 
     @Override
     public List<VehicleEntity> getAllVehicles(String name) {
-        return vehicleRepository.getVehiclesByFeature(name, null);
+        return vehicleRepository.getAllVehiclesByFeature(name);
     }
 
     @Override

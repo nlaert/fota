@@ -9,7 +9,15 @@ public class CodeEntity {
 
     @Id
     private String code;
-    private String isHardware;
+    private boolean isHardware;
+
+    protected CodeEntity() {
+    }
+
+    public CodeEntity(final String code, final boolean isHardware) {
+        this.code = code;
+        this.isHardware = isHardware;
+    }
 
     public String getCode() {
         return code;
@@ -19,25 +27,25 @@ public class CodeEntity {
         this.code = code;
     }
 
-    public String getIsHardware() {
+    public boolean isHardware() {
         return isHardware;
     }
 
-    public void setIsHardware(String isHardware) {
-        this.isHardware = isHardware;
+    public void setHardware(final boolean hardware) {
+        isHardware = hardware;
     }
 
     @Override
-    public boolean equals(Object o) {
+    public boolean equals(final Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         CodeEntity that = (CodeEntity) o;
-        return Objects.equals(getCode(), that.getCode()) &&
-                Objects.equals(getIsHardware(), that.getIsHardware());
+        return isHardware() == that.isHardware() &&
+                Objects.equals(getCode(), that.getCode());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getCode(), getIsHardware());
+        return Objects.hash(getCode(), isHardware());
     }
 }

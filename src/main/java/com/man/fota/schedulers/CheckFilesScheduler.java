@@ -19,33 +19,32 @@ public class CheckFilesScheduler implements EnvironmentAware {
 
     private final VehicleService vehicleService;
     private String filesPath;
-    private final WatchService watchService;
+    private WatchService watchService;
 
     @Autowired
-    public CheckFilesScheduler(final VehicleService vehicleService) throws IOException {
+    public CheckFilesScheduler(final VehicleService vehicleService) {
         this.vehicleService = vehicleService;
-        try {
-            watchService = FileSystems.getDefault().newWatchService();
-            Path path = Paths.get("build");
-            path.register(watchService, StandardWatchEventKinds.ENTRY_CREATE);
-        } catch (IOException e) {
-            LOG.error("Error creating watch Service.", e);
-            throw e;
-        }
     }
 
     @Scheduled(fixedDelayString = "${fota.vehicle_files.watch_rate:60000}")
     public void processNewFiles() {
         WatchKey watchKey = watchService.poll();
         if (watchKey != null) {
-        //TODO: check this toString
-            watchKey.pollEvents().forEach(watchEvent -> vehicleService.processNewFile(watchEvent.context().toString()));
+            watchKey.pollEvents().forEach(watchEvent ->
+                    vehicleService.processNewFile(filesPath, watchEvent.context().toString()));
             watchKey.reset();
         }
     }
 
     @Override
     public void setEnvironment(final Environment environment) {
-        filesPath = System.getProperty("fota.vehicle_files.path");
+        filesPath = environment.getProperty("fota.vehicle_files.path");
+        try {
+            watchService = FileSystems.getDefault().newWatchService();
+            Path path = Paths.get(filesPath);
+            path.register(watchService, StandardWatchEventKinds.ENTRY_CREATE);
+        } catch (IOException e) {
+            LOG.error("Error creating watch Service.", e);
+        }
     }
 }

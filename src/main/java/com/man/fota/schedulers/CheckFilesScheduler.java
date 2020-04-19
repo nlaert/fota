@@ -1,6 +1,6 @@
 package com.man.fota.schedulers;
 
-import com.man.fota.services.VehicleService;
+import com.man.fota.services.FileProcessingService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,21 +17,22 @@ public class CheckFilesScheduler implements EnvironmentAware {
 
     private static final Logger LOG = LoggerFactory.getLogger(CheckFilesScheduler.class);
 
-    private final VehicleService vehicleService;
+    private final FileProcessingService fileProcessingService;
     private String filesPath;
     private WatchService watchService;
 
     @Autowired
-    public CheckFilesScheduler(final VehicleService vehicleService) {
-        this.vehicleService = vehicleService;
+    public CheckFilesScheduler(FileProcessingService fileProcessingService) {
+        this.fileProcessingService = fileProcessingService;
     }
+
 
     @Scheduled(fixedDelayString = "${fota.vehicle_files.watch_rate:60000}")
     public void processNewFiles() {
         WatchKey watchKey = watchService.poll();
         if (watchKey != null) {
             watchKey.pollEvents().forEach(watchEvent ->
-                    vehicleService.processNewFile(filesPath, watchEvent.context().toString()));
+                    fileProcessingService.processNewFile(filesPath, watchEvent.context().toString()));
             watchKey.reset();
         }
     }

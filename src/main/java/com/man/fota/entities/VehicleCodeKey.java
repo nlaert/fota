@@ -2,18 +2,19 @@ package com.man.fota.entities;
 
 import javax.persistence.Embeddable;
 import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
+import javax.persistence.ManyToMany;
 import java.io.Serializable;
+import java.util.Objects;
 
 @Embeddable
 public class VehicleCodeKey implements Serializable {
 
     @JoinColumn(name = "vehicle")
-    @ManyToOne
+    @ManyToMany
     private VehicleEntity vehicle;
 
     @JoinColumn(name = "code")
-    @ManyToOne
+    @ManyToMany
     private CodeEntity code;
 
     public VehicleCodeKey() {
@@ -38,5 +39,19 @@ public class VehicleCodeKey implements Serializable {
 
     public void setCode(final CodeEntity code) {
         this.code = code;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        VehicleCodeKey that = (VehicleCodeKey) o;
+        return Objects.equals(getVehicle(), that.getVehicle()) &&
+                Objects.equals(getCode(), that.getCode());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getVehicle(), getCode());
     }
 }

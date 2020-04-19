@@ -1,10 +1,9 @@
 package com.man.fota.services;
 
-import com.fasterxml.jackson.databind.MappingIterator;
-import com.fasterxml.jackson.dataformat.csv.CsvMapper;
-import com.fasterxml.jackson.dataformat.csv.CsvParser;
-import com.fasterxml.jackson.dataformat.csv.CsvSchema;
-import com.man.fota.entities.*;
+import com.man.fota.entities.CodeEntity;
+import com.man.fota.entities.FeatureEntity;
+import com.man.fota.entities.VehicleCodesEntity;
+import com.man.fota.entities.VehicleEntity;
 import com.man.fota.repositories.CodeRepository;
 import com.man.fota.repositories.FeatureRepository;
 import com.man.fota.repositories.VehicleCodesRepository;
@@ -14,18 +13,15 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashSet;
+import javax.transaction.Transactional;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 public class VehicleServiceImpl implements VehicleService {
 
     private static final Logger LOG = LoggerFactory.getLogger(VehicleServiceImpl.class);
-    private static final String HARDWARE_FILE_PREFIX = "hard_";
-    private static final String SOFTWARE_FILE_PREFIX = "soft_";
 
     private final VehicleRepository vehicleRepository;
     private final CodeRepository codeRepository;
@@ -63,56 +59,34 @@ public class VehicleServiceImpl implements VehicleService {
         return vehicleRepository.findAll();
     }
 
+    @Transactional
     @Override
-    public void processNewFile(final String filePath, final String fileName) {
-        if (!fileName.startsWith(HARDWARE_FILE_PREFIX) && !fileName.startsWith(SOFTWARE_FILE_PREFIX)) {
-            return;
-        }
-        try {
-            LOG.debug("Starting to read file {}", fileName);
-            boolean isHardware = fileName.startsWith(HARDWARE_FILE_PREFIX);
-            HashSet<VehicleEntity> vehicles = new HashSet<>();
-            HashSet<CodeEntity> codes = new HashSet<>();
-            List<VehicleCodesEntity> vehicleCodes = new ArrayList<>();
-            List<String[]> lines = readFile(filePath + "/" + fileName);
-            for (String[] line : lines) {
-                String vin = line[0];
-                String code = line[1];
-                VehicleEntity vehicleEntity = new VehicleEntity(vin);
-                vehicles.add(vehicleEntity);
-                CodeEntity codeEntity = new CodeEntity(code, isHardware);
-                codes.add(codeEntity);
-                VehicleCodeKey vehicleCodeKey = new VehicleCodeKey(vehicleEntity, codeEntity);
-                vehicleCodes.add(new VehicleCodesEntity(vehicleCodeKey));
-            }
-            saveBatch(fileName, vehicles, codes, vehicleCodes);
-            LOG.debug("Finished reading file {}", fileName);
-
-        } catch (IOException e) {
-            LOG.error("Could not read file {}.", filePath, e);
-        }
-    }
-
-    //TODO: take care of duplicate entries
-    private void saveBatch(final String fileName,
-                           final HashSet<VehicleEntity> vehicles,
-                           final HashSet<CodeEntity> codes,
-                           final List<VehicleCodesEntity> vehicleCodes) {
+    public void saveBatch(final String fileName,
+                          final Set<VehicleEntity> vehicles,
+                          final Set<CodeEntity> codes,
+                          final List<VehicleCodesEntity> vehicleCodes) {
         LOG.debug("Inserting {} lines of file {}", vehicleCodes.size(), fileName);
         vehicleRepository.saveAll(vehicles);
         codeRepository.saveAll(codes);
-        vehicleCodesRepository.saveAll(vehicleCodes);
+        vehicleCodesRepository.insertAllIfNotExists(vehicleCodes);
         LOG.debug("Finished inserting lines of file {}", vehicleCodes.size());
     }
 
-    private List<String[]> readFile(final String filePath) throws IOException {
-        CsvMapper mapper = new CsvMapper();
-        CsvSchema csvSchema = CsvSchema.emptySchema();
-        mapper.enable(CsvParser.Feature.WRAP_AS_ARRAY);
-        File file = new File(filePath);
-        MappingIterator<String[]> mappingIterator = mapper.readerFor(String[].class).with(csvSchema).readValues(file);
-        return mappingIterator.readAll();
+    /**
+     * Queries the DB to check for duplicate and remove them from the lists. NOTE: This will change the given lists
+     * @param vehicles
+     * @param codes
+     * @param vehicleCodes
+     */
+    private void removeDuplicates(final Set<VehicleEntity> vehicles,
+                                  final Set<CodeEntity> codes,
+                                  final List<VehicleCodesEntity> vehicleCodes) {
+
+        vehicles.removeAll(vehicleRepository.findAllById(vehicles.stream()
+                .map(VehicleEntity::getVin).collect(Collectors.toList())));
+        codes.removeAll(codeRepository.findAllById(codes.stream()
+                .map(CodeEntity::getCode).collect(Collectors.toList())));
+        vehicleCodes.removeAll(vehicleCodesRepository.findAllById(vehicleCodes.stream()
+                .map(VehicleCodesEntity::getVehicleCodeKey).collect(Collectors.toList())));
     }
-
-
 }

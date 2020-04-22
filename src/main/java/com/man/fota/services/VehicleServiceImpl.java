@@ -1,7 +1,9 @@
 package com.man.fota.services;
 
+import com.man.fota.dto.AllValues;
+import com.man.fota.dto.FeatureDto;
+import com.man.fota.dto.VehicleDto;
 import com.man.fota.entities.CodeEntity;
-import com.man.fota.entities.FeatureEntity;
 import com.man.fota.entities.VehicleCodesEntity;
 import com.man.fota.entities.VehicleEntity;
 import com.man.fota.repositories.CodeRepository;
@@ -29,34 +31,43 @@ public class VehicleServiceImpl implements VehicleService {
     private final FeatureRepository featureRepository;
 
     @Autowired
-    public VehicleServiceImpl(final FeatureRepository featureRepository,
-                              final VehicleRepository vehicleRepository,
+    public VehicleServiceImpl(final VehicleRepository vehicleRepository,
                               final CodeRepository codeRepository,
-                              final VehicleCodesRepository vehicleCodesRepository) {
-        this.featureRepository = featureRepository;
+                              final VehicleCodesRepository vehicleCodesRepository,
+                              final FeatureRepository featureRepository) {
         this.vehicleRepository = vehicleRepository;
         this.codeRepository = codeRepository;
         this.vehicleCodesRepository = vehicleCodesRepository;
+        this.featureRepository = featureRepository;
     }
 
     @Override
-    public List<FeatureEntity> getInstallableFeaturesByVehicle(String vin) {
-        return featureRepository.getFeaturesByVin(vin, true);
+    public List<FeatureDto> getInstallableFeaturesByVehicle(String vin) {
+        return featureRepository.getInstallableFeaturesByVin(vin).stream()
+                .map(f -> new FeatureDto(f.getName()))
+                .collect(Collectors.toList());
     }
 
     @Override
-    public List<FeatureEntity> getIncompatibleFeaturesByVehicle(String vin) {
-        return featureRepository.getFeaturesByVin(vin, false);
+    public List<FeatureDto> getIncompatibleFeaturesByVehicle(String vin) {
+        return featureRepository.getIncompatibleFeaturesByVin(vin).stream()
+                .map(f -> new FeatureDto(f.getName()))
+                .collect(Collectors.toList());
     }
 
     @Override
-    public List<FeatureEntity> getAllFeaturesByVehicle(String vin) {
-        return featureRepository.getFeaturesByVin(vin, null);
+    public AllValues<FeatureDto> getAllFeaturesByVehicle(String vin) {
+        AllValues<FeatureDto> allValues = new AllValues<>();
+        allValues.setInstallable(getInstallableFeaturesByVehicle(vin));
+        allValues.setIncompatible(getIncompatibleFeaturesByVehicle(vin));
+        return allValues;
     }
 
     @Override
-    public List<VehicleEntity> getAll() {
-        return vehicleRepository.findAll();
+    public List<VehicleDto> getAll() {
+        return vehicleRepository.findAll().stream()
+                .map(vehicleEntity -> new VehicleDto(vehicleEntity.getVin()))
+                .collect(Collectors.toList());
     }
 
     @Transactional
@@ -65,28 +76,22 @@ public class VehicleServiceImpl implements VehicleService {
                           final Set<VehicleEntity> vehicles,
                           final Set<CodeEntity> codes,
                           final List<VehicleCodesEntity> vehicleCodes) {
+        removeDuplicates(vehicles, codes);
         LOG.debug("Inserting {} lines of file {}", vehicleCodes.size(), fileName);
         vehicleRepository.saveAll(vehicles);
         codeRepository.saveAll(codes);
-        vehicleCodesRepository.insertAllIfNotExists(vehicleCodes);
+        vehicleCodes.forEach(vehicleCodesEntity ->
+                vehicleCodesRepository.insertIfNotExists(vehicleCodesEntity.getVehicleCodeKey().getVehicle(),
+                        vehicleCodesEntity.getVehicleCodeKey().getCode()));
         LOG.debug("Finished inserting lines of file {}", vehicleCodes.size());
     }
 
-    /**
-     * Queries the DB to check for duplicate and remove them from the lists. NOTE: This will change the given lists
-     * @param vehicles
-     * @param codes
-     * @param vehicleCodes
-     */
-    private void removeDuplicates(final Set<VehicleEntity> vehicles,
-                                  final Set<CodeEntity> codes,
-                                  final List<VehicleCodesEntity> vehicleCodes) {
-
+    @Override
+    public void removeDuplicates(final Set<VehicleEntity> vehicles,
+                                 final Set<CodeEntity> codes) {
         vehicles.removeAll(vehicleRepository.findAllById(vehicles.stream()
                 .map(VehicleEntity::getVin).collect(Collectors.toList())));
         codes.removeAll(codeRepository.findAllById(codes.stream()
                 .map(CodeEntity::getCode).collect(Collectors.toList())));
-        vehicleCodes.removeAll(vehicleCodesRepository.findAllById(vehicleCodes.stream()
-                .map(VehicleCodesEntity::getVehicleCodeKey).collect(Collectors.toList())));
     }
 }

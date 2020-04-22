@@ -2,7 +2,7 @@ package com.man.fota.entities;
 
 import javax.persistence.Embeddable;
 import javax.persistence.JoinColumn;
-import javax.persistence.ManyToMany;
+import javax.persistence.ManyToOne;
 import java.io.Serializable;
 import java.util.Objects;
 
@@ -10,11 +10,11 @@ import java.util.Objects;
 public class VehicleCodeKey implements Serializable {
 
     @JoinColumn(name = "vehicle")
-    @ManyToMany
+    @ManyToOne
     private VehicleEntity vehicle;
 
     @JoinColumn(name = "code")
-    @ManyToMany
+    @ManyToOne
     private CodeEntity code;
 
     public VehicleCodeKey() {

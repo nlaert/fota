@@ -4,19 +4,27 @@ import com.man.fota.entities.FeatureEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
-@Repository
 public interface FeatureRepository extends JpaRepository<FeatureEntity, String> {
 
-    @Query("select f from features f " +
-            "left join feature_codes fc on fc.featureCodeKey.featureName = f " +
-            "left join codes c on fc.featureCodeKey.code = c " +
-            "left join vehicle_codes vc on vc.vehicleCodeKey.code = c " +
-            "where (fc.isRequired = :isRequired or :isRequired is null) " + //TODO: not sure about the is null on Boolean
-            "and vc.vehicleCodeKey.vehicle = :vin")
-    List<FeatureEntity> getFeaturesByVin(@Param("vin") String vin,
-                                         @Param("isRequired") Boolean isRequired);
+    @Query("select distinct f from features f " +
+            "inner join feature_codes fc on fc.featureCodeKey.featureName = f " +
+            "inner join vehicle_codes vc on vc.vehicleCodeKey.code = fc.featureCodeKey.code " +
+            "where vc.vehicleCodeKey.vehicle.vin = :vin " +
+            "and fc.isRequired = true " +
+            "and fc.featureCodeKey.featureName not in " +
+            "               (select fc1.featureCodeKey.featureName from feature_codes fc1 " +
+            "               inner join vehicle_codes vc1 on vc1.vehicleCodeKey.code = fc1.featureCodeKey.code " +
+            "               where vc1.vehicleCodeKey.vehicle.vin = :vin " +
+            "               and fc1.isRequired = false)")
+    List<FeatureEntity> getInstallableFeaturesByVin(@Param("vin") String vin);
+
+    @Query("select distinct f from features f " +
+            "inner join feature_codes fc on fc.featureCodeKey.featureName = f " +
+            "inner join vehicle_codes vc on vc.vehicleCodeKey.code = fc.featureCodeKey.code " +
+            "where vc.vehicleCodeKey.vehicle.vin = :vin " +
+            "and fc.isRequired = false")
+    List<FeatureEntity> getIncompatibleFeaturesByVin(@Param("vin") String vin);
 }

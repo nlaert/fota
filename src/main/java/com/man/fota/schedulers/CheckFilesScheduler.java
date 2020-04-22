@@ -26,7 +26,9 @@ public class CheckFilesScheduler implements EnvironmentAware {
         this.fileProcessingService = fileProcessingService;
     }
 
-
+    /**
+     * Checks the file system for new files to process.
+     */
     @Scheduled(fixedDelayString = "${fota.vehicle_files.watch_rate:60000}")
     public void processNewFiles() {
         WatchKey watchKey = watchService.poll();

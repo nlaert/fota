@@ -1,12 +1,14 @@
 package com.man.fota.services;
 
-import com.man.fota.entities.FeatureEntity;
-import com.man.fota.entities.VehicleEntity;
+import com.man.fota.dto.AllValues;
+import com.man.fota.dto.FeatureDto;
+import com.man.fota.dto.VehicleDto;
 import com.man.fota.repositories.FeatureRepository;
 import com.man.fota.repositories.VehicleRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class FeatureServiceImpl implements FeatureService {
@@ -14,28 +16,38 @@ public class FeatureServiceImpl implements FeatureService {
     private final FeatureRepository featureRepository;
     private final VehicleRepository vehicleRepository;
 
-    public FeatureServiceImpl(final FeatureRepository featureRepository, final VehicleRepository vehicleRepository) {
+    public FeatureServiceImpl(final FeatureRepository featureRepository,
+                              final VehicleRepository vehicleRepository) {
         this.featureRepository = featureRepository;
         this.vehicleRepository = vehicleRepository;
     }
 
     @Override
-    public List<VehicleEntity> getCompatibleVehicles(String name) {
-        return vehicleRepository.getVehiclesByFeature(name, true);
+    public List<VehicleDto> getCompatibleVehicles(String name) {
+        return vehicleRepository.getInstallableVehiclesByFeature(name).stream()
+                .map(vehicleEntity -> new VehicleDto(vehicleEntity.getVin()))
+                .collect(Collectors.toList());
     }
 
     @Override
-    public List<VehicleEntity> getIncompatibleVehicles(String name) {
-        return vehicleRepository.getVehiclesByFeature(name, false);
+    public List<VehicleDto> getIncompatibleVehicles(String name) {
+        return vehicleRepository.getIncompatibleVehiclesByFeature(name).stream()
+                .map(vehicleEntity -> new VehicleDto(vehicleEntity.getVin()))
+                .collect(Collectors.toList());
     }
 
     @Override
-    public List<VehicleEntity> getAllVehicles(String name) {
-        return vehicleRepository.getAllVehiclesByFeature(name);
+    public AllValues<VehicleDto> getAllVehicles(String name) {
+        AllValues<VehicleDto> allValues = new AllValues<>();
+        allValues.setInstallable(getCompatibleVehicles(name));
+        allValues.setIncompatible(getIncompatibleVehicles(name));
+        return allValues;
     }
 
     @Override
-    public List<FeatureEntity> getAllFeatures() {
-        return featureRepository.findAll();
+    public List<FeatureDto> getAllFeatures() {
+        return featureRepository.findAll().stream()
+                .map(featureEntity -> new FeatureDto(featureEntity.getName()))
+                .collect(Collectors.toList());
     }
 }

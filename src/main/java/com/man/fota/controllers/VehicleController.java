@@ -1,14 +1,18 @@
 package com.man.fota.controllers;
 
-import com.man.fota.entities.FeatureEntity;
-import com.man.fota.entities.VehicleCodesEntity;
-import com.man.fota.entities.VehicleEntity;
-import com.man.fota.services.FeatureService;
+import com.man.fota.dto.AllValues;
+import com.man.fota.dto.FeatureDto;
+import com.man.fota.dto.VehicleDto;
 import com.man.fota.services.VehicleService;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-import java.util.Collection;
 import java.util.List;
 
 @RequestMapping("vehicles")
@@ -21,24 +25,38 @@ public class VehicleController {
         this.vehicleService = vehicleService;
     }
 
+    @ApiOperation(value = "Find installable features by VIN", notes = "gives all the features that can be installed for the corresponding vin", response = FeatureDto.class)
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "successful operation", response = FeatureDto.class),
+            @ApiResponse(code = 404, message = "Not found")})
     @GetMapping("/{vin}/installable")
-    public ResponseEntity<List<FeatureEntity>> getInstallableFeatures(@PathVariable String vin) {
+    public ResponseEntity<List<FeatureDto>> getInstallableFeatures(@PathVariable String vin) {
         return ResponseEntity.ok(vehicleService.getInstallableFeaturesByVehicle(vin));
     }
 
-
+    @ApiOperation(value = "Find incompatible features by VIN", notes = "gives all the features that cannot be installed for the corresponding vin", response = FeatureDto.class)
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "successful operation", response = FeatureDto.class),
+            @ApiResponse(code = 404, message = "Not found")})
     @GetMapping("/{vin}/incompatible")
-    public ResponseEntity<List<FeatureEntity>> getIncompatibleFeatures(@PathVariable String vin) {
+    public ResponseEntity<List<FeatureDto>> getIncompatibleFeatures(@PathVariable String vin) {
         return ResponseEntity.ok(vehicleService.getIncompatibleFeaturesByVehicle(vin));
     }
 
+    @ApiOperation(value = "Find all features by VIN", notes = "gives all features that can/cannot be installed for the corresponding vin", response = AllValues.class)
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "successful operation", response = AllValues.class),
+            @ApiResponse(code = 404, message = "Not found")})
     @GetMapping("/{vin}")
-    public ResponseEntity<List<FeatureEntity>> getFeaturesByVehicle(@PathVariable String vin) {
+    public ResponseEntity<AllValues<FeatureDto>> getFeaturesByVehicle(@PathVariable String vin) {
         return ResponseEntity.ok(vehicleService.getAllFeaturesByVehicle(vin));
     }
 
+    @ApiOperation(value = "Find all vehicles", notes = "returns a list of all vehicles", response = VehicleDto.class)
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "successful operation", response = VehicleDto.class)})
     @GetMapping("/")
-    public ResponseEntity<List<VehicleEntity>> getAll() {
+    public ResponseEntity<List<VehicleDto>> getAll() {
         return ResponseEntity.ok(vehicleService.getAll());
     }
 }

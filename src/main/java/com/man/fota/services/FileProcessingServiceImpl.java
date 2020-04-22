@@ -49,6 +49,7 @@ public class FileProcessingServiceImpl implements FileProcessingService {
             Set<CodeEntity> codes = new HashSet<>();
             List<VehicleCodesEntity> vehicleCodes = new ArrayList<>(DUPLICATE_BATCH_REMOVAL_SIZE);
             List<String[]> lines = readFile(filePath + "/" + fileName);
+            int counter = 0;
             for (String[] line : lines) {
                 String vin = line[0];
                 String code = line[1];
@@ -58,9 +59,10 @@ public class FileProcessingServiceImpl implements FileProcessingService {
                 codes.add(codeEntity);
                 VehicleCodeKey vehicleCodeKey = new VehicleCodeKey(vehicleEntity, codeEntity);
                 vehicleCodes.add(new VehicleCodesEntity(vehicleCodeKey));
-//                if (vehicleCodes.size() >= DUPLICATE_BATCH_REMOVAL_SIZE) {
-//                   removeDuplicates(vehicles, codes, vehicleCodes);
-//                }
+                if (++counter >= DUPLICATE_BATCH_REMOVAL_SIZE) {
+                    vehicleService.removeDuplicates(vehicles, codes);
+                    counter = 0;
+                }
             }
             vehicleService.saveBatch(fileName, vehicles, codes, vehicleCodes);
             LOG.debug("Finished reading file {}", fileName);

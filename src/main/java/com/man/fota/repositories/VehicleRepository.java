@@ -11,20 +11,24 @@ import java.util.List;
 @Repository
 public interface VehicleRepository extends JpaRepository<VehicleEntity, String> {
 
-    @Query("select v from vehicles v " +
-            "left join vehicle_codes vc on vc.vehicleCodeKey.vehicle = v " +
-            "left join codes c on vc.vehicleCodeKey.code = c " +
-            "left join feature_codes fc on fc.featureCodeKey.code = c " +
-            "where fc.isRequired = :isRequired " +
-            "and fc.featureCodeKey.featureName.name = :name")
-    List<VehicleEntity> getVehiclesByFeature(@Param("name") String name,
-                                             @Param("isRequired") Boolean isRequired);
+    @Query("select distinct v from vehicles v " +
+            "inner join vehicle_codes vc on vc.vehicleCodeKey.vehicle = v " +
+            "inner join feature_codes fc on fc.featureCodeKey.code = vc.vehicleCodeKey.code " +
+            "where fc.isRequired = true " +
+            "and fc.featureCodeKey.featureName.name = :name " +
+            "and v not in (" +
+            "               select v1 from vehicles v1 " +
+            "               inner join vehicle_codes vc1 on vc1.vehicleCodeKey.vehicle = v1 " +
+            "               inner join feature_codes fc1 on fc1.featureCodeKey.code = vc1.vehicleCodeKey.code " +
+            "               where fc1.isRequired = false" +
+            "               and fc1.featureCodeKey.featureName.name = :name)")
+    List<VehicleEntity> getInstallableVehiclesByFeature(@Param("name") String name);
 
     @Query("select v from vehicles v " +
-            "left join vehicle_codes vc on vc.vehicleCodeKey.vehicle = v " +
-            "left join codes c on vc.vehicleCodeKey.code = c " +
-            "left join feature_codes fc on fc.featureCodeKey.code = c " +
-            "where fc.featureCodeKey.featureName.name = :name")
-    List<VehicleEntity> getAllVehiclesByFeature(@Param("name") String name);
+            "inner join vehicle_codes vc on vc.vehicleCodeKey.vehicle = v " +
+            "inner join feature_codes fc on fc.featureCodeKey.code = vc.vehicleCodeKey.code " +
+            "where fc.isRequired = false " +
+            "and fc.featureCodeKey.featureName.name = :name ")
+    List<VehicleEntity> getIncompatibleVehiclesByFeature(@Param("name") String name);
 
 }

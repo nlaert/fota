@@ -19,46 +19,47 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest(classes = FotaApplication.class)
 @AutoConfigureMockMvc
 @TestPropertySource(locations = "classpath:test.properties")
-public class FeatureControllerTest {
+public class VehicleControllerTest {
 
     @Autowired
     private MockMvc mvc;
 
     @Test
-    public void shouldReturn1CompatibleAnd1IncompatibleVehicleForFeatureX() throws Exception {
-        mvc.perform(get("/features/X"))
+    public void shouldReturn1CompatibleAnd1IncompatibleCompatibleFeatureYIncompatibleZ() throws Exception {
+        mvc.perform(get("/vehicles/compatibleFeatureYIncompatibleZ"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.installable", hasSize(1)))
                 .andExpect(jsonPath("$.incompatible", hasSize(1)))
-                .andExpect(jsonPath("$.installable[0].vin", is("compatibleFeatureX")))
-                .andExpect(jsonPath("$.incompatible[0].vin", is("incompatibleFeatureX")));
+                .andExpect(jsonPath("$.installable[0].featureName", is("Y")))
+                .andExpect(jsonPath("$.incompatible[0].featureName", is("Z")));
     }
 
     @Test
-    public void shouldReturn1CompatibleAndVehicleForFeatureX() throws Exception {
-        mvc.perform(get("/features/X/installable"))
+    public void shouldReturnFeatureXForCompatibleFeatureX() throws Exception {
+        mvc.perform(get("/vehicles/compatibleFeatureX/installable"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$[0].vin", is("compatibleFeatureX")));
+                .andExpect(jsonPath("$[0].featureName", is("X")));
     }
 
     @Test
-    public void shouldReturn1IncompatibleAndVehicleForFeatureZ() throws Exception {
-        mvc.perform(get("/features/Z/incompatible"))
+    public void shouldReturnFeatureZForCompatibleFeatureYIncompatibleZ() throws Exception {
+        mvc.perform(get("/vehicles/compatibleFeatureYIncompatibleZ/incompatible"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$[0].vin", is("compatibleFeatureYIncompatibleZ")));
+                .andExpect(jsonPath("$[0].featureName", is("Z")));
     }
 
     @Test
-    public void getAllFeaturesTest() throws Exception {
-        mvc.perform(get("/features/"))
+    public void getAllVehiclesTest() throws Exception {
+        mvc.perform(get("/vehicles/"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$", hasSize(3)))
-                .andExpect(jsonPath("$[0].featureName", is("X")))
-                .andExpect(jsonPath("$[1].featureName", is("Y")))
-                .andExpect(jsonPath("$[2].featureName", is("Z")));
+                .andExpect(jsonPath("$", hasSize(4)))
+                .andExpect(jsonPath("$[0].vin", is("compatibleFeatureX")))
+                .andExpect(jsonPath("$[1].vin", is("compatibleFeatureYAndZ")))
+                .andExpect(jsonPath("$[2].vin", is("compatibleFeatureYIncompatibleZ")))
+                .andExpect(jsonPath("$[3].vin", is("incompatibleFeatureX")));
     }
 }

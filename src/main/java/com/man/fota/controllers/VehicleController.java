@@ -7,6 +7,7 @@ import com.man.fota.services.VehicleService;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -21,6 +22,7 @@ public class VehicleController {
 
     private final VehicleService vehicleService;
 
+    @Autowired
     public VehicleController(final VehicleService vehicleService) {
         this.vehicleService = vehicleService;
     }
@@ -56,7 +58,7 @@ public class VehicleController {
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "successful operation", response = VehicleDto.class)})
     @GetMapping("/")
-    public ResponseEntity<List<VehicleDto>> getAll() {
+    public ResponseEntity<List<VehicleDto>> getAllVehicles() {
         return ResponseEntity.ok(vehicleService.getAll());
     }
 }

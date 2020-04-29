@@ -38,7 +38,8 @@ public class FileProcessingServiceImpl implements FileProcessingService {
 
 
     @Override
-    public boolean processNewFile(final String filePath, final String fileName) {
+    public boolean processNewFile(final File file) {
+        String fileName = file.getName();
         if (!fileName.startsWith(HARDWARE_FILE_PREFIX) && !fileName.startsWith(SOFTWARE_FILE_PREFIX)) {
             return false;
         }
@@ -48,7 +49,7 @@ public class FileProcessingServiceImpl implements FileProcessingService {
             Set<VehicleEntity> vehicles = new HashSet<>();
             Set<CodeEntity> codes = new HashSet<>();
             List<VehicleCodesEntity> vehicleCodes = new ArrayList<>(DUPLICATE_BATCH_REMOVAL_SIZE);
-            List<String[]> lines = readFile(filePath + "/" + fileName);
+            List<String[]> lines = readFile(file);
             int counter = 0;
             for (String[] line : lines) {
                 String vin = line[0];
@@ -68,17 +69,16 @@ public class FileProcessingServiceImpl implements FileProcessingService {
             LOG.debug("Finished reading file {}", fileName);
 
         } catch (IOException e) {
-            LOG.error("Could not read file {}.", filePath, e);
+            LOG.error("Could not read file {}.", file, e);
             return false;
         }
         return true;
     }
 
-    private List<String[]> readFile(final String filePath) throws IOException {
+    private List<String[]> readFile(final File file) throws IOException {
         CsvMapper mapper = new CsvMapper();
         CsvSchema csvSchema = CsvSchema.emptySchema();
         mapper.enable(CsvParser.Feature.WRAP_AS_ARRAY);
-        File file = new File(filePath);
         MappingIterator<String[]> mappingIterator = mapper.readerFor(String[].class).with(csvSchema).readValues(file);
         return mappingIterator.readAll();
     }

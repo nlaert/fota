@@ -28,7 +28,7 @@ public class CheckFilesScheduler {
         File dir = new File(filesPath);
         if(dir.listFiles() != null) {
             for (File file : dir.listFiles()) {
-                if (fileProcessingService.processNewFile(filesPath, file.getName())) {
+                if (fileProcessingService.processNewFile(file)) {
                     file.delete();
                 }
             }

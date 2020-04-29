@@ -38,9 +38,9 @@ public class FileProcessingServiceImpl implements FileProcessingService {
 
 
     @Override
-    public void processNewFile(final String filePath, final String fileName) {
+    public boolean processNewFile(final String filePath, final String fileName) {
         if (!fileName.startsWith(HARDWARE_FILE_PREFIX) && !fileName.startsWith(SOFTWARE_FILE_PREFIX)) {
-            return;
+            return false;
         }
         try {
             LOG.debug("Starting to read file {}", fileName);
@@ -69,7 +69,9 @@ public class FileProcessingServiceImpl implements FileProcessingService {
 
         } catch (IOException e) {
             LOG.error("Could not read file {}.", filePath, e);
+            return false;
         }
+        return true;
     }
 
     private List<String[]> readFile(final String filePath) throws IOException {

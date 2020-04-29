@@ -8,7 +8,7 @@ Open a terminal in the project root and run the following commands:
 
 **NOTE**: it might be necessary editing the `fota.vehicle_files.path` in *src/main/resources/application.properties*
 
-The application will be listening in <localhost:8080/fota> by default
+The application will be listening in <http://localhost:8080/fota> by default
 
 ### Running tests:
 
@@ -17,4 +17,4 @@ Open a terminal in the project root and run the following command:
 
 ### Checking the documentation:
 
-Documentation can be found in <localhost:8080/fota/swagger-ui.html>
+Documentation can be found in <http://localhost:8080/fota/swagger-ui.html>

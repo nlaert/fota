@@ -1,6 +1,6 @@
 ![Java CI with Gradle](https://github.com/nlaert/fota/workflows/Java%20CI%20with%20Gradle/badge.svg)
 
-##To build and run the project:
+## To build and run the project:
 
 Open a terminal in the project root and run the following commands:
 * `gradlew build`
@@ -10,11 +10,11 @@ Open a terminal in the project root and run the following commands:
 
 The application will be listening in <localhost:8080/fota> by default
 
-###Running tests:
+### Running tests:
 
 Open a terminal in the project root and run the following command:
 * `gradlew test`
 
-###Checking the documentation:
+### Checking the documentation:
 
 Documentation can be found in <localhost:8080/fota/swagger-ui.html>

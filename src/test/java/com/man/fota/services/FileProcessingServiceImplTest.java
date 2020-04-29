@@ -3,7 +3,6 @@ package com.man.fota.services;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
-import org.springframework.test.context.TestPropertySource;
 
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anySet;
@@ -12,7 +11,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
-@TestPropertySource(locations = "classpath:test.properties")
 class FileProcessingServiceImplTest {
 
     @Mock
